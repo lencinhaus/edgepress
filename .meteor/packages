@@ -14,3 +14,7 @@ bootstrap
 handlebars
 less
 coffeescript
+standard-app-packages
+
+spin
+iron-router
