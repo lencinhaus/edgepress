@@ -3,14 +3,9 @@
 # 'meteor add' and 'meteor remove' will edit this file for you,
 # but you can also edit it by hand.
 
-insecure
 preserve-inputs
 accounts-base
-accounts-facebook
-accounts-google
 accounts-password
-accounts-ui
-bootstrap
 handlebars
 less
 coffeescript
@@ -18,3 +13,16 @@ standard-app-packages
 
 spin
 iron-router
+
+
+
+accounts-ui-bootstrap-3
+spiderable
+
+flash-messages
+bootstrap3-less
+
+
+font-awesome-4
+parsleyjs
+bootstrap-wysiwyg

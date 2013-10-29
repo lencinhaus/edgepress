@@ -1,0 +1,129 @@
+<template name="dashboardLayout">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="page-header">
+				<h1>Dashboard <small>manage your blogs and posts</small></h1>
+			</div>
+		</div>
+	</div>
+  <div class="row">
+  	<div class="col-md-3">
+  		<div class="panel panel-default">
+  			<div class="panel-heading">
+  				<h3 class="panel-title">Your blogs</h3>
+  			</div>
+  			<div class="panel-body">
+  				{{#if haveBlogs }}
+	  			<ul class="nav nav-pills nav-stacked">
+			  		{{#each blogs}}
+			  		<li{{#if isCurrentBlog ../blog}} class="active"{{/if}}>
+			  			<a href="{{pathFor 'dashboardViewBlog'}}">{{name}}</a>
+			  		</li>
+			  		{{/each}}
+		  		</ul>
+		  		{{else}}
+					<div class="alert alert-info">No blogs so far, create one now!</div>
+		  		{{/if}}
+		  	</div>
+		  	<div class="panel-footer">
+		  		<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-create-blog" id="button-create-blog"><i class="fa fa-plus-circle"></i> Create a new blog</button>
+	  		</div>
+  		</div>
+  	</div>
+  	<div class="col-md-9">
+  		{{yield 'dashboardContent'}}
+  	</div>
+  </div>
+  <div id="modal-create-blog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="New Blog" aria-hidden="true">
+  	<div class="modal-dialog">
+	  	<div class="modal-content">
+		  	<div class="modal-header">
+		  		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		    	<h3 class="modal-title">New Blog</h3>
+		  	</div>
+		  	<div class="modal-body">
+		  		<div id="form-create-blog" class="form-horizontal" role="form" data-bind="true">
+		  			<div class="form-group">
+			  			<label class="control-label col-md-2" for="input-new-blog-name">Name</label>
+			  			<div class="col-md-10">
+			  				<input type="text" class="form-control" id="input-new-blog-name" placeholder="Interesting Stuff" required="required" data-notblank="true" />
+			  			</div>
+		  			</div>
+		  			<div class="form-group">
+			  			<label class="control-label col-md-2" for="input-new-blog-slug">Slug</label>
+			  			<div class="col-md-10">
+			  				<input type="text" class="form-control" id="input-new-blog-slug" required="required" data-notblank="true" pattern="^[a-z0-9\-]+$" data-slug="true" />
+			  			</div>
+		  			</div>
+		  		</div>
+		  	</div>
+		  	<div class="modal-footer">
+		  		<button type="button" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
+			    <button type="button" class="btn btn-primary" id="button-save-blog">Create!</button>
+			  </div>
+		  </div>
+	  </div>
+  </div>
+</template>
+
+<template name="dashboardHome">
+	<h2>Dashboard</h2>
+</template>
+
+<template name="dashboardViewBlog">
+	<div class="panel panel-primary">
+		<div class="panel-heading clearfix">
+				<h3 class="panel-title pull-left">{{blog.name}}</h3>
+				<div class="btn-group btn-group-sm pull-right">
+					<button type="button" class="btn btn-default" data-toggle="modal" data-target="#modal-edit-blog" id="button-edit-blog"><i class="fa fa-pencil"></i> Edit</button>
+					<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modal-delete-blog" id="button-delete-blog"><i class="fa fa-times"></i> Delete</button>
+				</div>
+		</div>
+		<div class="panel-body">
+			
+  	</div>
+  	<div class="panel-footer">
+  		<button type="button" class="btn btn-primary"><i class="fa fa-plus-circle"></i> Create Post</button>
+  	</div>
+	</div>
+	<div id="modal-delete-blog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Delete Blog" aria-hidden="true">
+  	<div class="modal-dialog">
+	  	<div class="modal-content">
+		  	<div class="modal-header">
+		    	<h3>Delete Blog</h3>
+		  	</div>
+		  	<div class="modal-body">
+		  		<i class="fa fa-warning"></i> Blog <strong>{{blog.name}}</strong> will be deleted permanently, Proceed?
+		  	</div>
+		  	<div class="modal-footer">
+		  		<button type="button" class="btn btn-default" data-dismiss="modal">Hmm, maybe not.</button>
+			    <button type="button" class="btn btn-danger" id="button-delete-blog-confirm">Yes I'm sure!</button>
+			  </div>
+		  </div>
+	  </div>
+  </div>
+  <div id="modal-edit-blog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Edit Blog" aria-hidden="true">
+  	<div class="modal-dialog">
+	  	<div class="modal-content">
+		  	<div class="modal-header">
+		  		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		    	<h3>Edit Blog</h3>
+		  	</div>
+		  	<div class="modal-body">
+		  		<form class="form-horizontal">
+		  			<div class="control-group">
+			  			<label class="control-label" for="input-edit-blog-name">Name</label>
+			  			<div class="controls">
+			  				<input type="text" id="input-edit-blog-name" value="{{blog.name}}" />
+			  			</div>
+		  			</div>
+		  		</form>
+		  	</div>
+		  	<div class="modal-footer">
+		  		<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+			    <button class="btn btn-primary" id="button-update-blog">Save changes</button>
+			  </div>
+		  </div>
+	  </div>
+  </div>
+</template>

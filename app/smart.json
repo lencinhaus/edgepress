@@ -1,0 +1,12 @@
+{
+  "packages": {
+    "spin": {},
+    "bootstrap3-less": {},
+    "accounts-ui-bootstrap-3": {},
+    "flash-messages": {},
+    "font-awesome-4": {},
+    "iron-router": {},
+    "parsleyjs": {},
+    "i18n": {}
+  }
+}
