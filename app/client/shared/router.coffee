@@ -20,3 +20,7 @@ Router.map ->
   @route "dashboardViewBlog", 
   	path: "/dashboard/:slug",
   	controller: "DashboardViewBlogController"
+
+  @route "dashboardCreatePost",
+    path: "dashboard/:slug/post/new"
+    controller: "DashboardCreatePostController"

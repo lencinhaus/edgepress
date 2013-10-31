@@ -7,7 +7,7 @@ maybeWithLatency = (f) ->
 	delayed = ->
 		future.return f()
 
-	Meteor.setTimeout delayed, 500
+	Meteor.setTimeout delayed, 0
 
 	future.wait()
 
@@ -52,7 +52,9 @@ Meteor.methods
 		check @userId, NonEmptyString
 		check blog,
 			name: NonEmptyString
-			slug: NonEmptyString
+			slug: Match.Where (slug) ->
+				check slug, NonEmptyString
+				/^[a-z0-9\-]+$/.test slug
 
 		_.extend blog,
 			userId: @userId

@@ -9,3 +9,8 @@ Template.layout.events
 	# hack for making accounts-ui-bootstrap-3 login buttons play along with iron router history
 	"click #login-dropdown-list .dropdown-toggle": (evt) ->
 		evt.preventDefault()
+
+	"click .link-switch-locale": (evt) ->
+		locale = $(evt.target).data "locale"
+		unless locale then return
+		Meteor.setLocale locale

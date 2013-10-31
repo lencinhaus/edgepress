@@ -35,6 +35,22 @@ class @DashboardViewBlogController extends DashboardController
 		super()
 		@render "dashboardViewBlog", to: "dashboardContent"
 
+class @DashboardCreatePostController extends DashboardController
+	data: ->
+		blog = Blogs.findOne 
+			slug: @params.slug
+
+		if not blog
+			console.warn "blog #{@params.slug} not found"
+			@redirect "dashboardHome"
+		else
+			_.extend super(), 
+				blog: blog
+				
+	action: ->
+		super()
+		@render "dashboardCreatePost", to: "dashboardContent"
+
 Template.dashboardLayout.isCurrentBlog = (blog) ->
 	blog and blog._id is @_id
 
@@ -42,12 +58,10 @@ Template.dashboardLayout.haveBlogs = ->
 	@blogs and @blogs.count()
 
 Template.dashboardLayout.created = ->
-	console.log "created"
 	# need to remember if we added the jquery callbacks, otherwise they will be re-added on each render
 	@addedJQueryCallbacks = false
 
 Template.dashboardLayout.rendered = ->
-	console.log "rendered"
 	if not @addedJQueryCallbacks
 		console.log "adding jquery"
 		@addedJQueryCallbacks = true
@@ -56,20 +70,19 @@ Template.dashboardLayout.rendered = ->
 		$("#modal-create-blog").on "shown.bs.modal", ->
 			$('#input-new-blog-name').focus()
 
-		$("#form-create-blog").parsley
-			successClass: "has-success"
-			errorClass: "has-error"
+		# form validation
+		parsleyOptions = getBaseParsleyOptions()
+		
+		_.extend parsleyOptions.messages,
+			regexp: parsleyOptions.messages.slug
+
+		_.extend parsleyOptions,
 			validators:
-				slug: (val, enabled, self) ->
+				unique: (val, enabled, self) ->
 					if not enabled then return true
 					not Blogs.findOne(slug: val)?
-			messages:
-				slug: "must be unique"
-			errors:
-				classHandler: (el) ->
-					$(el).closest ".form-group"
-				errorsWrapper: "<span class=\"help-block\"></span>"
-				errorElem: "<span></span>"
+
+		$("#form-create-blog").parsley parsleyOptions
 
 		$("#input-new-blog-name").keyup ->
 			if self.slugChanged then return
@@ -80,7 +93,7 @@ Template.dashboardLayout.rendered = ->
 
 
 Template.dashboardLayout.events
-	"keyup #input-new-blog-name": (evt) ->
+	"keyup #form-create-blog input[type=text]": (evt) ->
 		if evt.which is 13
 			$("#button-save-blog").click()
 
@@ -102,7 +115,7 @@ Template.dashboardLayout.events
 		Meteor.call "createBlog", blog, (error, blog) ->
 			if error
 				console.error error
-				FlashMessages.sendError "Invalid data"
+				FlashMessages.sendError __ "common.errors.server"
 
 				# resume deps
 				Deps.resume()
@@ -114,7 +127,8 @@ Template.dashboardLayout.events
 				Deps.resume()
 
 				# add a flash message
-				FlashMessages.sendSuccess "blog #{name} created successfully"
+				FlashMessages.sendSuccess __ "dashboard.createBlogForm.successFlash", 
+					name: name
 
 				#reset create blog form
 				$("#input-new-blog-name").val ""
@@ -149,14 +163,14 @@ Template.dashboardViewBlog.events
 		Blogs.remove blog._id, (error) ->
 			if error
 				console.error error
-				FlashMessages.sendError "cannot delete blog"
+				FlashMessages.sendError __ "common.errors.server"
 
 				# resume deps
 				Deps.resume()
 				return
 
 			# add a flash message
-			FlashMessages.sendSuccess "Blog #{blog.name} deleted successfully"
+			FlashMessages.sendSuccess __("dashboard.deleteBlogModal.successFlash", blog)
 
 			# when the modal is hidden
 			$('#modal-delete-blog').one "hidden.bs.modal", ->
