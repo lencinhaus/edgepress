@@ -1,10 +1,11 @@
 # an abstract controller class that redirects to home if the user is not authenticated
 class @AuthenticatedController extends RouteController
-	before: ->
-    console.log "auth"
-		if not Meteor.loggingIn() and not Meteor.user()
-			console.warn "unauthenticated access to route #{Router.current().route.name} is not allowed"
-			@redirect "home"
+  before: ->
+    if not Meteor.loggingIn() and not Meteor.user()
+      console.warn "unauthenticated access to route #{Router.current().route.name} is not allowed"
+      @redirect "home"
+
+    return
 
 Router.configure
   layoutTemplate: "layout"
@@ -12,16 +13,16 @@ Router.configure
   loadingTemplate: "loading"
 
 Router.map ->
-  @route "home", 
-  	path: "/"
+  @route "home",
+    path: "/"
 
   @route "dashboardHome",
-  	path: "/dashboard" 
-  	controller: "DashboardHomeController"
+    path: "/dashboard" 
+    controller: "DashboardHomeController"
 
   @route "dashboardBlog", 
-  	path: "/dashboard/:slug",
-  	controller: "DashboardBlogController"
+    path: "/dashboard/:slug"
+    controller: "DashboardBlogController"
 
   @route "dashboardCreatePost",
     path: "dashboard/:blogSlug/post"

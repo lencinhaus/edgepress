@@ -13,10 +13,10 @@ _.extend Deps,
 		if paused then return
 		paused = true
 		shouldFlush = false
-		undefined
+		return
 
 	resume: ->
 		if not paused then return
 		paused = false
 		if shouldFlush then @flush()
-		undefined
+		return

@@ -13,8 +13,8 @@ Template.editor.rendered = ->
 	$iframe = $(@find(".wysihtml5-sandbox"))
 	$iframe.height textareaHeight
 
-	@editor.on "focus:composer", ->
+	@editor.on "focus", ->
 		$iframe.toggleClass "focused", true
 
-	@editor.on "blur:composer", ->
+	@editor.on "blur", ->
 		$iframe.toggleClass "focused", false

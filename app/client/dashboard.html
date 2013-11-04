@@ -146,7 +146,7 @@
 				<h3 class="panel-title">{{#if post}}{{__ "dashboard.editPost.title"}}{{else}}{{__ "dashboard.newPost.title"}}{{/if}}</h3>
 		</div>
 		<div class="panel-body">
-			<div id="form-post" role="form">
+			<div id="form-post" role="form" data-bind="true">
 				<div class="form-group">
     			<label for="input-post-title">{{__ "common.labels.title"}}</label>
     			<input type="text" class="form-control" id="input-post-title" placeholder="{{__ "dashboard.postForm.titlePlaceholder"}}" required="required" data-notblank="true"{{#if post}} value="{{post.title}}"{{/if}}>
