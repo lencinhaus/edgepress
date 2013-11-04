@@ -16,6 +16,12 @@ _.extend Meteor.i18nMessages,
 				en: "Name"
 				it: "Nome"
 			slug: "Slug"
+			title:
+				en: "Title"
+				it: "Titolo"
+			content:
+				en: "Content"
+				it: "Contenuto"
 		buttons:
 			cancel:
 				en: "Cancel"
@@ -85,8 +91,8 @@ _.extend Meteor.i18nMessages,
 				en: "Interesting Stuff"
 				it: "Roba Interessante"
 			successFlash:
-				en: "blog {{name}} created successfully"
-				it: "il blog {{name}} è stato creato con successo"
+				en: "Blog {{name}} created successfully"
+				it: "Il blog {{name}} è stato creato con successo"
 		deleteBlogModal:
 			title:
 				en: "Delete Blog"
@@ -97,3 +103,39 @@ _.extend Meteor.i18nMessages,
 			successFlash:
 				en: "Blog {{name}} deleted successfully"
 				it: "Il blog {{name}} è stato cancellato con successo"
+		editBlogModal:
+			title:
+				en: "Edit Blog"
+				it: "Modifica Blog"
+		editBlogForm:
+			namePlaceholder:
+				en: "Enter the blog's name"
+				it: "Inserisci il nome del blog"
+			successFlash:
+				en: "Blog {{name}} modified successfully"
+				it: "Il blog {{name}} è stato modificato con successo"
+		blog:
+			createPost:
+				en: "Create a new post"
+				it: "Crea un nuovo post"
+		newPost:
+			title:
+				en: "New Post"
+				it: "Nuovo Post"
+			successFlash:
+				en: "Post {{title}} created successfully"
+				it: "Il post {{title}} è stato creato con successo"
+		editPost:
+			title:
+				en: "Edit Post"
+				it: "Modifica Post"
+			successFlash:
+				en: "Post {{title}} modified successfully"
+				it: "Il post {{title}} è stato modificato con successo"
+		postForm:
+			titlePlaceholder:
+				en: "Cool Title"
+				it: "Titolo Fico"
+			contentPlaceholder:
+				en: "Amazing content"
+				it: "Contenuto incredibile"

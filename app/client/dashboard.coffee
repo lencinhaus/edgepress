@@ -1,55 +1,97 @@
-class DashboardController extends share.AuthenticatedController
-	waitOn: ->
-		Meteor.subscribe "userBlogs"
+class DashboardBaseController extends AuthenticatedController
+	before: ->
+		console.log "sub-base"
+		@subscribe("userBlogs").wait()
+		return
 
 	data: ->
+		if not @ready() then return
+		console.log "data-base"
 		blogs: Blogs.find()
 
 	action: ->
+		console.log "render-base"
 		@render "dashboardLayout"
+		return
 
-class @DashboardHomeController extends DashboardController
+class @DashboardHomeController extends DashboardBaseController
 	action: ->
 		super()
+		console.log "render-home"
 		@render "dashboardHome", to: "dashboardContent"
+		return
 
-class @DashboardViewBlogController extends DashboardController
-	waitOn: ->
-		superSubs = super()
-		[Meteor.subscribe "userBlogPosts", @params.slug].concat superSubs
+class @DashboardBlogController extends DashboardBaseController
+	before: ->
+		console.log "sub-blog"
+		@subscribe("userBlogPosts", @params.slug).wait()
+		return
 	
 	data: ->
+		if not @ready() then return
+
+		console.log "data-blog"
 		blog = Blogs.findOne 
 			slug: @params.slug
 
 		if not blog
 			console.warn "blog #{@params.slug} not found"
 			@redirect "dashboardHome"
-		else
-			_.extend super(), 
-				blog: blog
-				posts: Posts.find
-					blogId: blog._id
+			return
+
+		_.extend super(),
+			blog: blog
+			posts: Posts.find
+				blogId: blog._id
 
 	action: ->
 		super()
-		@render "dashboardViewBlog", to: "dashboardContent"
+		console.log "render-blog"
+		@render "dashboardBlog", to: "dashboardContent"
+		return
 
-class @DashboardCreatePostController extends DashboardController
+class @DashboardPostController extends DashboardBaseController
+	before: ->
+		console.log "sub-post"
+		if @params.postSlug and @params.blogSlug
+			@subscribe("userBlogPost", @params.blogSlug, @params.postSlug).wait()
+
+		return
+
 	data: ->
+		if not @ready() then return
+
+		console.log "data-post"
 		blog = Blogs.findOne 
-			slug: @params.slug
+			slug: @params.blogSlug
 
 		if not blog
-			console.warn "blog #{@params.slug} not found"
+			console.warn "blog #{@params.blogSlug} not found"
 			@redirect "dashboardHome"
-		else
-			_.extend super(), 
-				blog: blog
+			return
+
+		post = null
+
+		if @params.postSlug
+			post = Posts.findOne
+				blogId: blog._id
+				slug: @params.postSlug
+
+			if not post
+				console.warn "post #{@params.postSlug} not found"
+				@redirect "dashboardBlog",
+					slug: blog.slug
+				return
+		
+		_.extend super(),
+			blog: blog
+			post: post
 				
 	action: ->
 		super()
-		@render "dashboardCreatePost", to: "dashboardContent"
+		console.log "render-post"
+		@render "dashboardPost", to: "dashboardContent"
+		return
 
 Template.dashboardLayout.isCurrentBlog = (blog) ->
 	blog and blog._id is @_id
@@ -63,26 +105,30 @@ Template.dashboardLayout.created = ->
 
 Template.dashboardLayout.rendered = ->
 	if not @addedJQueryCallbacks
-		console.log "adding jquery"
 		@addedJQueryCallbacks = true
 		@slugChanged = false
 		self = this
+
+		$("#modal-create-blog").on "show.bs.modal", ->
+			# form validation
+			parsleyOptions = getBaseParsleyOptions()
+			
+			_.extend parsleyOptions.messages,
+				regexp: parsleyOptions.messages.slug
+
+			_.extend parsleyOptions,
+				validators:
+					unique: (val, enabled, self) ->
+						if not enabled then return true
+						not Blogs.findOne(slug: val)?
+
+			$("#form-create-blog").parsley parsleyOptions
+
 		$("#modal-create-blog").on "shown.bs.modal", ->
 			$('#input-new-blog-name').focus()
 
-		# form validation
-		parsleyOptions = getBaseParsleyOptions()
-		
-		_.extend parsleyOptions.messages,
-			regexp: parsleyOptions.messages.slug
-
-		_.extend parsleyOptions,
-			validators:
-				unique: (val, enabled, self) ->
-					if not enabled then return true
-					not Blogs.findOne(slug: val)?
-
-		$("#form-create-blog").parsley parsleyOptions
+		$("#modal-create-blog").on "hidden.bs.modal", ->
+			$("#form-create-blog").parsley "destroy"
 
 		$("#input-new-blog-name").keyup ->
 			if self.slugChanged then return
@@ -90,7 +136,6 @@ Template.dashboardLayout.rendered = ->
 
 		$("#input-new-blog-slug").keyup ->
 			self.slugChanged = true
-
 
 Template.dashboardLayout.events
 	"keyup #form-create-blog input[type=text]": (evt) ->
@@ -112,7 +157,7 @@ Template.dashboardLayout.events
 			name: name
 			slug: $("#input-new-blog-slug").val()
 
-		Meteor.call "createBlog", blog, (error, blog) ->
+		Meteor.call "createBlog", blog, (error, blogId) ->
 			if error
 				console.error error
 				FlashMessages.sendError __ "common.errors.server"
@@ -135,23 +180,98 @@ Template.dashboardLayout.events
 				$("#input-new-blog-slug").val ""
 
 				# view the blog
-				Router.go "dashboardViewBlog",
+				Router.go "dashboardBlog",
 					slug: blog.slug
 
 			# close the create blog modal
 			$("#modal-create-blog").modal "hide"
 
-Template.dashboardViewBlog.events
+Template.dashboardBlog.created = ->
+	# need to remember if we added the jquery callbacks, otherwise they will be re-added on each render
+	@addedJQueryCallbacks = false
+
+Template.dashboardBlog.rendered = ->
+	if not @addedJQueryCallbacks
+		@addedJQueryCallbacks = true
+		self = this
+		
+		$("#modal-edit-blog").on "shown.bs.modal", ->
+			$('#input-edit-blog-name').focus()
+
+		$("#modal-edit-blog").on "show.bs.modal", ->
+			# form validation
+			parsleyOptions = getBaseParsleyOptions()
+			
+			_.extend parsleyOptions.messages,
+				regexp: parsleyOptions.messages.slug
+
+			_.extend parsleyOptions,
+				validators:
+					unique: (val, enabled) ->
+						if not enabled then return true
+						not Blogs.findOne
+							slug: val,
+							_id:
+								$ne: self.data.blog._id
+			
+			$("#form-edit-blog").parsley parsleyOptions
+
+		$("#modal-edit-blog").on "hidden.bs.modal", ->
+			$("#form-edit-blog").parsley "destroy"
+
+Template.dashboardBlog.pathForCreatePost = ->
+	Router.path "dashboardCreatePost",
+		blogSlug: @slug
+
+Template.dashboardBlog.pathForEditPost = ->
+	blog = Blogs.findOne
+		_id: @blogId
+	Router.path "dashboardEditPost",
+		blogSlug: blog?.slug
+		postSlug: @slug
+
+Template.dashboardBlog.events
+	"keyup #form-edit-blog input[type=text]": (evt) ->
+		if evt.which is 13
+			$("#button-update-blog").click()
+
 	"click #button-update-blog": ->
-		# update the blog
-		blog = 
-			name: $("#input-edit-blog-name").val()
+		# validate the form
+		if not $("#form-edit-blog").parsley "validate"
+			return
 
-		Blogs.update @blog._id, 
-			$set: blog
+		# pause deps until the modal is hidden
+		Deps.pause()
 
-		# close the modal
-		$("#modal-edit-blog").modal "hide"
+		# save the new blog
+		blog = @blog
+		blog.name = $("#input-edit-blog-name").val() 
+		blog.slug = $("#input-edit-blog-slug").val()
+
+		Meteor.call "editBlog", blog, (error, affected) ->
+			if error or not affected
+				console.error error
+				FlashMessages.sendError __ "common.errors.server"
+
+				# resume deps
+				Deps.resume()
+				return
+
+			# once the modal is hidden
+			$("#modal-edit-blog").one "hidden.bs.modal", ->
+				# resume deps
+				Deps.resume()
+
+				# view the blog
+				Router.go "dashboardBlog",
+					slug: blog.slug
+
+				# add a flash message
+				FlashMessages.sendSuccess __ "dashboard.editBlogForm.successFlash", 
+					name: blog.name
+
+			# close the create blog modal
+			$("#modal-edit-blog").modal "hide"
 
 	"click #button-delete-blog-confirm": ->
 		# pause deps until the modal is hidden
@@ -182,3 +302,81 @@ Template.dashboardViewBlog.events
 
 			# close the modal
 			$("#modal-delete-blog").modal "hide"
+
+Template.dashboardPost.created = ->
+	console.log "created"
+	# need to remember if we added the jquery callbacks, otherwise they will be re-added on each render
+	@addedJQueryCallbacks = false
+
+Template.dashboardPost.rendered = ->
+	console.log "rendered"
+	self = this
+	if not @addedJQueryCallbacks
+		console.log "jquery"
+		@addedJQueryCallbacks = true
+
+		# form validation
+		parsleyOptions = getBaseParsleyOptions()
+		
+		_.extend parsleyOptions.messages,
+			regexp: parsleyOptions.messages.slug
+
+		_.extend parsleyOptions,
+			validators:
+				unique: (val, enabled) ->
+					if not enabled then return true
+					selector = 
+						slug: val
+					if self.data.post
+						_.extend selector,
+							_id:
+								$ne: self.data.post._id
+					not Posts.findOne selector
+
+		$("#form-post").parsley parsleyOptions
+		return
+
+Template.dashboardPost.destroyed = ->
+	console.log "destroyed"
+	$("#form-post").parsley "destroy"
+		
+Template.dashboardPost.editorData = ->
+	id: 'editor-post-content'
+	class: 'form-control'
+	placeholder: __ "dashboard.postForm.contentPlaceholder"
+	value: @post?.content
+
+Template.dashboardPost.events
+	"click #button-save-post": ->
+		console.log "validation"
+		# validate the form
+		if not $("#form-post").parsley "validate"
+			console.log "invalid"
+			return
+
+		console.log "valid"
+		isNew = not @post
+		post = if isNew then {} else @post
+		blog = @blog
+		_.extend post,
+			blogId: @blog._id
+			title: $("#input-post-title").val()
+			slug: $("#input-post-slug").val()
+			content: $("#editor-post-content").val()
+		console.log post
+
+		Meteor.call "savePost", post, (error, postId) ->
+			if error
+				console.error error
+				FlashMessages.sendError __ "common.errors.server"
+
+				return
+
+			# add a flash message
+			message = if isNew then "dashboard.newPost.successFlash" else "dashboard.editPost.successFlash"
+			FlashMessages.sendSuccess __ message, post
+
+			# go to post editing
+			Router.go "dashboardEditPost",
+				blogSlug: blog.slug
+				postSlug: post.slug

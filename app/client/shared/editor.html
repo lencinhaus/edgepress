@@ -1,0 +1,17 @@
+<template name="editor">
+	<div id="{{id}}-container" class="panel panel-default editor">
+		<div class="panel-heading editor-toolbar" style="display: none;">
+			<div class="btn-toolbar" role="toolbar" data-role="editor-toolbar" data-target="#editor-post-content">
+				<div class="btn-group">
+					<button type="button" class="btn btn-default" data-wysihtml5-command="bold" tabindex="-1"><i class="fa fa-bold"></i></button>
+					<button type="button" class="btn btn-default" data-wysihtml5-command="italic" tabindex="-1"><i class="fa fa-italic"></i></button>
+					<button type="button" class="btn btn-default" data-wysihtml5-command="strikethrough" tabindex="-1"><i class="fa fa-strikethrough"></i></button>
+					<button type="button" class="btn btn-default" data-wysihtml5-command="underline" tabindex="-1"><i class="fa fa-underline"></i></button>
+				</div>
+			</div>
+		</div>
+		<div class="panel-body">
+			<textarea id="{{id}}" class="{{class}}" rows="20"{{#if placeholder}} placeholder="{{placeholder}}"{{/if}}>{{value}}</textarea>
+		</div>
+	</div>
+</template>

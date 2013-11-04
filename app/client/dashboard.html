@@ -17,7 +17,7 @@
 	  			<ul class="nav nav-pills nav-stacked">
 			  		{{#each blogs}}
 			  		<li{{#if isCurrentBlog ../blog}} class="active"{{/if}}>
-			  			<a href="{{pathFor 'dashboardViewBlog'}}">{{name}}</a>
+			  			<a href="{{pathFor 'dashboardBlog'}}">{{name}}</a>
 			  		</li>
 			  		{{/each}}
 		  		</ul>
@@ -70,7 +70,7 @@
 	<h2>Dashboard</h2>
 </template>
 
-<template name="dashboardViewBlog">
+<template name="dashboardBlog">
 	<div class="panel panel-primary">
 		<div class="panel-heading clearfix">
 				<h3 class="panel-title pull-left">{{blog.name}}</h3>
@@ -80,11 +80,15 @@
 				</div>
 		</div>
 		<div class="panel-body">
-			
+			<ul>
+				{{#each posts}}
+				<li><a href="{{pathForEditPost}}">{{title}}</a></li>
+				{{/each}}
+			</ul>
   	</div>
   	<div class="panel-footer">
   		{{#with blog}}
-  		<a role="button" class="btn btn-primary" href="{{pathFor 'dashboardCreatePost'}}"><i class="fa fa-plus-circle"></i> Create Post</a>
+  		<a role="button" class="btn btn-primary" href="{{pathForCreatePost}}"><i class="fa fa-plus-circle"></i> {{__ 'dashboard.blog.createPost'}}</a>
   		{{/with}}
   	</div>
 	</div>
@@ -109,17 +113,23 @@
 	  	<div class="modal-content">
 		  	<div class="modal-header">
 		  		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-		    	<h3>Edit Blog</h3>
+		    	<h3>{{__ 'dashboard.editBlogModal.title'}}</h3>
 		  	</div>
 		  	<div class="modal-body">
-		  		<form class="form-horizontal">
-		  			<div class="control-group">
-			  			<label class="control-label" for="input-edit-blog-name">Name</label>
-			  			<div class="controls">
-			  				<input type="text" id="input-edit-blog-name" value="{{blog.name}}" />
+		  		<div id="form-edit-blog" class="form-horizontal" role="form" data-bind="true">
+		  			<div class="form-group">
+			  			<label class="control-label col-md-2" for="input-edit-blog-name">{{__ "common.labels.name"}}</label>
+			  			<div class="col-md-10">
+			  				<input type="text" class="form-control" id="input-edit-blog-name" placeholder="{{__ 'dashboard.editBlogForm.namePlaceholder'}}" required="required" data-notblank="true" value="{{blog.name}}" />
 			  			</div>
 		  			</div>
-		  		</form>
+		  			<div class="form-group">
+			  			<label class="control-label col-md-2" for="input-edit-blog-slug">{{__ "common.labels.slug"}}</label>
+			  			<div class="col-md-10">
+			  				<input type="text" class="form-control" id="input-edit-blog-slug" required="required" data-notblank="true" pattern="^[a-z0-9\-]+$" data-unique="true" value="{{blog.slug}}" />
+			  			</div>
+		  			</div>
+		  		</div>
 		  	</div>
 		  	<div class="modal-footer">
 		  		<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
@@ -130,6 +140,29 @@
   </div>
 </template>
 
-<template name="dashboardCreatePost">
-	CICCIA {{blog.name}}
+<template name="dashboardPost">
+	<div class="panel panel-primary">
+		<div class="panel-heading">
+				<h3 class="panel-title">{{#if post}}{{__ "dashboard.editPost.title"}}{{else}}{{__ "dashboard.newPost.title"}}{{/if}}</h3>
+		</div>
+		<div class="panel-body">
+			<div id="form-post" role="form">
+				<div class="form-group">
+    			<label for="input-post-title">{{__ "common.labels.title"}}</label>
+    			<input type="text" class="form-control" id="input-post-title" placeholder="{{__ "dashboard.postForm.titlePlaceholder"}}" required="required" data-notblank="true"{{#if post}} value="{{post.title}}"{{/if}}>
+  			</div>
+  			<div class="form-group">
+    			<label for="input-post-title">{{__ "common.labels.slug"}}</label>
+    			<input type="text" class="form-control" id="input-post-slug" required="required" data-notblank="true" pattern="^[a-z0-9\-]+$" data-unique="true"{{#if post}} value="{{post.slug}}"{{/if}}>
+  			</div>
+  			<div class="form-group">
+    			<label for="editor-post-content">{{__ "common.labels.content"}}</label>
+		    	{{> editor editorData}}
+  			</div>
+			</div>
+  	</div>
+  	<div class="panel-footer">
+  		<button type="button" class="btn btn-primary" id="button-save-post"><i class="fa fa-save"></i> {{__ "common.buttons.save"}}</button>
+  	</div>
+	</div>
 </template>

@@ -1,0 +1,17 @@
+/* inherit bootstrap active button state when a command is selected */
+.editor-toolbar .btn.wysihtml5-command-active {
+	.btn.active;
+}
+
+.editor .wysihtml5-sandbox {
+	.form-control;
+
+	/* had to copy the contents of .form-control:focus here, because in less 1.3.3 there's no :extend clause */
+	/* posted an issue on meteor about this: https://github.com/meteor/meteor/issues/1556 */
+	&.focused {
+		@color-rgba: rgba(red(@input-border-focus), green(@input-border-focus), blue(@input-border-focus), .6);
+    border-color: @input-border-focus;
+    outline: 0;
+    .box-shadow(~"inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px @{color-rgba}");
+	}
+}

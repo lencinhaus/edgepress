@@ -1,7 +1,5 @@
 /spin
 /iron-router
-/spin
-/iron-router
 /simple-i18n
 /bootstrap3-less
 /accounts-ui-bootstrap-3
@@ -9,6 +7,6 @@
 /bootstrap-3
 /font-awesome
 /font-awesome-4
-/iron-router
 /parsleyjs
 /i18n
+/x-editable-bootstrap3
